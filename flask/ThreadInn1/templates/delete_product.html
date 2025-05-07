@@ -1,0 +1,112 @@
+<!-- delete_product.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Product</title>
+</head>
+<body>
+    <h1>Delete Product</h1>
+    <p>Are you sure you want to delete the product: {{ product.name }}?</p>
+
+    <!-- This form sends a POST request to the delete route -->
+    <form method="POST" action="{{ url_for('delete_product', id=product.id) }}">
+        <button type="submit">Yes, Delete</button>
+    </form>
+
+    <a href="{{ url_for('admin_products') }}">Cancel</a>
+</body>
+</html>
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Product - ThreadInn</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .confirmation-box {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .btn-danger {
+            padding: 10px 25px;
+            font-weight: 600;
+        }
+        .product-info {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="confirmation-box text-center">
+        <h1 class="mb-4">Delete Product</h1>
+        
+        <div class="product-info text-start">
+            <h3>{{ product.name }}</h3>
+            <p class="mb-1"><strong>Price:</strong> ${{ product.price }}</p>
+            <p><strong>Description:</strong> {{ product.desc }}</p>
+        </div>
+        
+        <p class="mb-4 text-danger">Are you sure you want to delete this product? This action cannot be undone.</p>
+        
+        <div class="d-flex justify-content-center gap-3">
+            <button onclick="deleteProduct({{ product.id }})" class="btn btn-danger">
+                Confirm Delete
+            </button>
+            <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+        </div>
+    </div>
+
+    <script>
+        function deleteProduct(productId) {
+            if (!confirm('Are you absolutely sure you want to delete this product?')) {
+                return;
+            }
+
+            fetch(`/api/products/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert("Product deleted successfully!");
+                    window.location.href = '/dashboard'; // Redirect to dashboard
+                } else {
+                    throw new Error(data.message || 'Failed to delete product');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`Error: ${error.message}`);
+            });
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> -->

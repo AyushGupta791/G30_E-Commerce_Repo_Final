@@ -1,0 +1,329 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - {{ request.site.name|default:"Your Store" }}</title>
+    <link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+<body>
+    <header  style="background-color:rgb(42, 41, 41);font-family: 'montserrat';color: white; font-weight: 700;">
+        <div class="container" style="background-color:rgb(42, 41, 41); color: white;">
+            <a href="{% url 'home' %}">
+                <img src="{% static 'images/ThreadInn.png' %}" alt="" style="width: 160px; height: auto;">
+            </a>
+            <nav class="nav-links">
+                <a href="{% url 'home' %}"  style="color: white;">Home</a>
+                <a href="{% url 'men' %}"  style="color: white;">Shop</a>
+                <a href="{% url 'cart' %}"  style="color: white;">Cart</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container" >
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="success-message" id="success-message">
+            Payment processed successfully! Redirecting to Home page.
+        </div>
+
+        <div class="checkout-container">
+            <div class="payment-form">
+                <div class="security-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    Card is secure
+                </div>
+
+                <h2 class="section-title">Payment details</h2>
+                
+                <div class="payment-methods">
+                    <div class="payment-method active" data-method="credit-card">Credit Card</div>
+                    <div class="payment-method" data-method="paypal">PayPal</div>
+                    <div class="payment-method" data-method="other">Other</div>
+                </div>
+
+                <!-- Credit Card Payment Section -->
+                <div id="credit-card-method" class="payment-method-content active">
+                    <div class="saved-cards">
+                        {% for card in saved_cards %}
+                        <div class="card-option {% if card.type == 'visa' %}visa{% endif %} {% if card.selected %}selected{% endif %}" data-card-id="{{ card.id }}">
+                            <div class="card-logo">{{ card.logo }}</div>
+                            <div class="card-details">
+                                <div class="card-number">**** {{ card.last_four }}</div>
+                                <div class="card-info-text">{{ card.full_number }}</div>
+                            </div>
+                            <div class="card-type">
+                                {% if card.type == 'mastercard' %}
+                                <img src="{% static 'img/mastercard.svg' %}" alt="Mastercard" width="36" height="24" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDM2IDI0Ij48cGF0aCBmaWxsPSIjRkY1RjAwIiBkPSJNMTIgNGg4LjZjNC4yIDAgNi44IDIuMiA2LjggNi41IDAgNC4zLTIuNiA2LjUtNi44IDYuNUgxMnoiLz48cGF0aCBmaWxsPSIjRUIwMDFCIiBkPSJNMTMuOSAxM2gtMi4zbC0uMiAyLjFoMi4zTDEzLjkgMTN6Ii8+PHBhdGggZmlsbD0iI0Y3OUUxQiIgZD0iTTEzLjUgOC45SDExbC0uMyAyLjFoMi4zTDEzLjUgOC45eiIvPjxwYXRoIGQ9Ik0yNy40IDE5LjZIMjJsLjktMi4xSDExbC0uOSAyLjFIOC42TC45OEgxNHYtLjRjMC0uOC41LTEuMiAxLjMtMS4yaDIuMlY0SDIydjExLjJoMy4zYy44IDAgMS4yLS40IDEuMy0xLjJ2LS40aDUuNGwuOC0yLjFoLTUuMVY0aDE2djE1LjZoLTE2em0tNy41LTIuMWgtMi4zbC40LTIuMWgyLjNsLS40IDIuMXptMS4yLTIuMWgyLjNsLS40IDIuMWgtMi4zbC40LTIuMXptMS41LTIuMWgyLjNsLS4zIDIuMWgtMi4zbC4zLTIuMXptLTYuMSA0LjJoLTIuM2wuNC0yLjFoMi4zbC0uNCAyLjF6IiBmaWxsPSIjMUExOTFGIi8+PC9zdmc+'" />
+                                {% elif card.type == 'visa' %}
+                                <img src="{% static 'img/visa.svg' %}" alt="Visa" width="36" height="24" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAzNiAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMzMgMEgzQzEuMzQzMTUgMCAwIDEuMzQzMTUgMCAzVjIxQzAgMjIuNjU2OSAxLjM0MzE1IDI0IDMgMjRIMzNDMzQuNjU2OSAyNCAzNiAyMi42NTY5IDM2IDIxVjNDMzYgMS4zNDMxNSAzNC42NTY5IDAgMzMgMFoiIGZpbGw9IndoaXRlIi8+PHBhdGggZD0iTTE0LjgxNyAxNS44OEwxNi4zODQgOC4xMjAwMkgxOC4xNzJMMTYuNjA1IDE1Ljg4SDE0LjgxN1oiIGZpbGw9IiMxNDI3NEUiLz48cGF0aCBkPSJNMjMuODk4IDguMjk5OTdDMjMuNDk0IDguMTIzOTcgMjIuODY1IDcuOTM5OTcgMjIuMDgyIDcuOTM5OTdDMjAuNDE4IDcuOTM5OTcgMTkuMjQ2IDguNzQzOTcgMTkuMjM4IDkuOTEzOTdDMTkuMjMgMTAuNzkgMjAuMDYyIDExLjI3NCAyMC42ODQgMTEuNTc4QzIxLjMyMyAxMS44OSAyMS41MzIgMTIuMDk4IDIxLjUzMiAxMi4zODRDMjEuNTI0IDEyLjgzNiAyMC45ODcgMTMuMDQ0IDE5LjgyMyAxMy4wNDRDMTkuMjMgMTMuMDQ0IDE4LjkyOCAxMi45NzYgMTguMzkxIDEyLjc4NkwxOC4xODMgMTIuNjg0TDE3Ljk2NiAxNC4xOTRDMTguNDQ2IDE0LjQyIDE5LjMxIDE0LjYxOCAyMC4yMDYgMTQuNjI2QzIxLjk4NiAxNC42MjYgMjMuMTMzIDEzLjgzMiAyMy4xNDEgMTIuNTU0QzIzLjE0MSAxMS44ODIgMjIuNzEyIDExLjM2MiAyMS43ODIgMTAuODhDMjEuMTc3IDEwLjU3NCAyMC45NzcgMTAuNDMyIDIwLjk3NyAxMC4xMzhDMjAuOTc3IDkuODY3OTcgMjEuMzQgOS41OTc5NyAyMi4xMjUgOS41OTc5N0MyMi43NjMgOS41ODk5NyAyMy4yMTggOS42OTM5NyAyMy41NzggOS43OTc5N0wyMy43MDYgOS44NTA5N0wyMy44OTggOC4yOTk5N1oiIGZpbGw9IiMxNDI3NEUiLz48cGF0aCBkPSJNMjcuMTY5IDExLjkwOEwyNy43NTggMTMuNTk4SDI5LjI3NEwyNy4wNTEgOC4xMjAwMkgyNS42ODFDMjUuMzIxIDguMTIwMDIgMjUuMDM1IDguMzAyMDIgMjQuODkzIDguNzAzMDJMMjIuNjMgMTMuNTk4SDI0LjIwNEwyNC41MTIgMTIuNzFIMjYuOTQzTDI3LjE2OSAxMS45MDhaTTI1LjAzNSAxMS40MThMMjUuODE5IDkuMzMwMDJMMjYuMTk3IDExLjQxOEgyNS4wMzVaIiBmaWxsPSIjMTQyNzRFIi8+PHBhdGggZD0iTTEyLjYwMiA4LjEyMDEyTDExLjEwMiAxMi40MTAxTDEwLjk1NCAxMS42NTgxQzEwLjY1MSAxMC43NTQxIDkuODIzIDkuNzgyMDggOC44ODMgOS4yOTQwOEw5LjUyMiA4LjIwODEyTDkuNTc3IDguMTIwMTJIMTEuODMzQzEyLjIwOSA4LjEyMDEyIDEyLjUxMSA4LjM2MjEyIDEyLjYwMiA4LjEyMDEyWiIgZmlsbD0iIzE0Mjc0RSIvPjxwYXRoIGQ9Ik03LjAyOSA4LjEyMDEySDQuNTAzbC0wLjA0NiAwLjIyMDEyQzcuMTk0IDguODkwMTIgOC45NTggMTAuNTAyMSA5LjUwMSAxMi40MTAxTDguODcxIDguNzAzMTJDOC43NDUgOC4zMTgxMiA4LjQyNyA4LjEzNjEyIDguMDk5IDguMTIwMTJINy4wMjlaIiBmaWxsPSIjRkY1RjAwIi8+PC9zdmc+'" />
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="new-card-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>Add new</span>
+                        </div>
+                    </div>
+
+                    <form id="payment-form" method="post" action="{% url 'checkout:checkout' %}">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            {{ checkout_form.email }}
+                            <div class="error" id="email-error">{% if checkout_form.email.errors %}{{ checkout_form.email.errors.0 }}{% else %}Please enter a valid email address{% endif %}</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            {{ checkout_form.name }}
+                            <div class="error" id="name-error">{% if checkout_form.name.errors %}{{ checkout_form.name.errors.0 }}{% else %}Please enter the cardholder name{% endif %}</div>
+                        </div>
+
+                        <div class="form-group card-info">
+                            <label for="card-number">Card Number</label>
+                            {{ payment_form.card_number }}
+                            <div class="error" id="card-error">{% if payment_form.card_number.errors %}{{ payment_form.card_number.errors.0 }}{% else %}Please enter a valid card number{% endif %}</div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expiry">Expiration date</label>
+                                {{ payment_form.expiry }}
+                                <div class="error" id="expiry-error">{% if payment_form.expiry.errors %}{{ payment_form.expiry.errors.0 }}{% else %}Please enter a valid expiration date{% endif %}</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cvv">CVV</label>
+                                {{ payment_form.cvv }}
+                                <div class="error" id="cvv-error">{% if payment_form.cvv.errors %}{{ payment_form.cvv.errors.0 }}{% else %}Please enter a valid security code{% endif %}</div>
+                            </div>
+                        </div>
+                        
+                        <h2 class="section-title">Billing Address</h2>
+                        <div class="form-group">
+                            <label for="address">Street Address</label>
+                            {{ checkout_form.street_address }}
+                            <div class="error" id="address-error">{% if checkout_form.street_address.errors %}{{ checkout_form.street_address.errors.0 }}{% else %}Please enter your street address{% endif %}</div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="city">City</label>
+                                {{ checkout_form.city }}
+                                <div class="error" id="city-error">{% if checkout_form.city.errors %}{{ checkout_form.city.errors.0 }}{% else %}Please enter your city{% endif %}</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="state">State/Province</label>
+                                {{ checkout_form.state }}
+                                <div class="error" id="state-error">{% if checkout_form.state.errors %}{{ checkout_form.state.errors.0 }}{% else %}Please enter your state{% endif %}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="zip">ZIP/Postal Code</label>
+                                {{ checkout_form.zip_code }}
+                                <div class="error" id="zip-error">{% if checkout_form.zip_code.errors %}{{ checkout_form.zip_code.errors.0 }}{% else %}Please enter your ZIP code{% endif %}</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="country">Country</label>
+                                {{ checkout_form.country }}
+                                <div class="error" id="country-error">{% if checkout_form.country.errors %}{{ checkout_form.country.errors.0 }}{% else %}Please select your country{% endif %}</div>
+                            </div>
+                        </div>
+
+                        <div class="loading" id="loading">
+                            <div class="spinner"></div>
+                            <p>Processing payment...</p>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-secondary" id="return-btn">Cancel and Return</button>
+                            <button type="submit" class="btn" id="pay-btn">Confirm order</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- PayPal Payment Section -->
+                <div id="paypal-method" class="payment-method-content">
+                    <div class="form-group">
+                        <label for="paypal-email">PayPal Email</label>
+                        <input type="email" id="paypal-email" name="paypal_email" placeholder="your-email@example.com">
+                        <div class="error" id="paypal-email-error">Please enter your PayPal email address</div>
+                    </div>
+                    <p class="info-text">You will be redirected to PayPal to complete your payment securely.</p>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" id="paypal-return-btn">Cancel and Return</button>
+                        <button type="button" class="btn" id="paypal-btn">Continue to PayPal</button>
+                    </div>
+                </div>
+
+                <!-- Other Payment Methods Section -->
+                <div id="other-method" class="payment-method-content">
+                    <div class="payment-options">
+                        <div class="payment-option">
+                            <input type="radio" id="bank-transfer" name="other_payment" value="bank-transfer">
+                            <label for="bank-transfer">
+                                <div class="option-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                                        <line x1="2" y1="10" x2="22" y2="10"></line>
+                                    </svg>
+                                </div>
+                                <div class="option-text">
+                                    <span>Bank Transfer</span>
+                                    <small>Pay directly from your bank account</small>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="payment-option">
+                            <input type="radio" id="apple-pay" name="other_payment" value="apple-pay">
+                            <label for="apple-pay">
+                                <div class="option-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path>
+                                        <path d="M12 6v12"></path>
+                                        <path d="M16 10H8"></path>
+                                    </svg>
+                                </div>
+                                <div class="option-text">
+                                    <span>Apple Pay</span>
+                                    <small>Pay using Apple Pay</small>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="payment-option">
+                            <input type="radio" id="google-pay" name="other_payment" value="google-pay">
+                            <label for="google-pay">
+                                <div class="option-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <path d="M8 12h8"></path>
+                                        <path d="M12 8v8"></path>
+                                    </svg>
+                                </div>
+                                <div class="option-text">
+                                    <span>Google Pay</span>
+                                    <small>Pay using Google Pay</small>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" id="other-return-btn">Cancel and Return</button>
+                        <button type="button" class="btn" id="other-pay-btn">Continue to Payment</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h2 class="section-title">Order Summary</h2>
+                <div class="summary-items">
+                    {% for item in cart_items %}
+                    <div class="summary-item">
+                        <div class="item-image">
+                            {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                            {% else %}
+                            <div class="no-image">No Image</div>
+                            {% endif %}
+                        </div>
+                        <div class="item-details">
+                            <h3 class="item-name">{{ item.product.name }}</h3>
+                            <div class="item-meta">
+                                <span class="item-quantity">Qty: {{ item.quantity }}</span>
+                                <span class="item-price" style="transform: translateX(-20px);">${{ item.product.price}}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-cart">
+                        <p>Your cart is empty</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="summary-totals">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span>${{ subtotal|floatformat:2 }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span>${{ shipping_cost|floatformat:2 }}</span>
+                    </div>
+                    {% if discount %}
+                    <div class="summary-row discount">
+                        <span>Discount</span>
+                        <span>-${{ discount|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="summary-row">
+                        <span>Tax</span>
+                        <span>${{ tax|floatformat:2 }}</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span>${{ total|floatformat:2 }}</span>
+                    </div>
+                </div>
+                
+                <div class="promo-code">
+                    <div class="form-group">
+                        <label for="promo">Promo Code</label>
+                        <div class="promo-input">
+                            <input type="text" id="promo" name="promo" placeholder="Enter promo code">
+                            <button type="button" id="apply-promo">Apply</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="secure-payment">
+                    <div class="secure-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <p>Your payment information is secured with industry-standard encryption.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <p>privacy   terms   contacts</p>
+                </div>
+                <div class="copyright">
+                    &copy; {% now "Y" %} {{ request.site.name|default:"Your Store" }}. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="{% static 'js/checkout.js' %}"></script>
+</body>
+</html>
