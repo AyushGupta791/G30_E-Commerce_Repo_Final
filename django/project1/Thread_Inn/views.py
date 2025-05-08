@@ -13,7 +13,7 @@ from .models import Product, Cart
 from .forms import ProductForm, CustomUserCreationForm
 
 
-API_BASE_URL = 'http://127.0.0.1:7000/api/products'
+API_BASE_URL = 'https://ayushgupta.pythonanywhere.com/api/products'
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
